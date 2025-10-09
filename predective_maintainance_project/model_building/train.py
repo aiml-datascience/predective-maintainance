@@ -16,13 +16,17 @@ import os
 from huggingface_hub import login, HfApi, create_repo
 from huggingface_hub.utils import RepositoryNotFoundError, HfHubHTTPError
 import mlflow
-from google.colab import userdata
+try:
+    from google.colab import userdata
+    HF_TOKEN = userdata.get('HF_TOKEN')
+    print("✅ Loaded HF token from Colab userdata")
+except ModuleNotFoundError:
+    HF_TOKEN = os.getenv("HF_TOKEN")
+   
+api = HfApi(token=HF_TOKEN)
 
 mlflow.set_tracking_uri("http://localhost:5000")
 mlflow.set_experiment("Tourismops")
-
-api = HfApi(token=userdata.get('HF_TOKEN'))
-
 
 Xtrain_path = "hf://datasets/sasipriyank/predectivemlops/Xtrain.csv"
 Xtest_path = "hf://datasets/sasipriyank/predectivemlops/Xtest.csv"
