@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.compose import make_column_transformer
 from sklearn.pipeline import make_pipeline
 import xgboost as xgb
-from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
 import joblib
 import mlflow
@@ -33,25 +33,8 @@ mlflow.set_tracking_uri("http://localhost:5000")
 mlflow.set_experiment("predectivemlops")
 
 # --------------------------
-# Dataset loading
+# Features
 # --------------------------
-# Update these paths to actual local CSVs or download via HfApi
-Xtrain_path = "hf://datasets/sasipriyank/predectivemlops/Xtrain.csv"
-Xtest_path = "hf://datasets/sasipriyank/predectivemlops/Xtest.csv"
-ytrain_path = "hf://datasets/sasipriyank/predectivemlops/ytrain.csv"
-ytest_path = "hf://datasets/sasipriyank/predectivemlops/ytest.csv"
-
-# Load CSVs
-Xtrain = pd.read_csv(Xtrain_path)
-Xtest = pd.read_csv(Xtest_path)
-ytrain = pd.read_csv(ytrain_path).squeeze()  # convert to Series
-ytest = pd.read_csv(ytest_path).squeeze()
-
-# Strip whitespace from column names
-Xtrain.columns = Xtrain.columns.str.strip()
-Xtest.columns = Xtest.columns.str.strip()
-
-# Ensure numeric data
 numeric_features = [
     'Lub oil pressure',
     'Fuel pressure',
@@ -60,16 +43,54 @@ numeric_features = [
     'Coolant temp',
     'Engine rpm'
 ]
-Xtrain[numeric_features] = Xtrain[numeric_features].astype(float)
-Xtest[numeric_features] = Xtest[numeric_features].astype(float)
+target_column = 'Engine Condition'
 
 # --------------------------
-# Class weight to handle imbalance
+# Robust CSV loader
+# --------------------------
+def load_csv_safe(path, numeric_features, target=None):
+    """
+    Load CSV, remove any duplicate header row, convert numeric columns.
+    """
+    df = pd.read_csv(path, header=0)
+    
+    # Detect if first row is still the header (string in numeric column)
+    first_row = df.iloc[0]
+    for col in numeric_features:
+        try:
+            float(first_row[col])
+        except ValueError:
+            # First row is header again, drop it
+            df = df.iloc[1:].reset_index(drop=True)
+            break
+    
+    # Convert numeric columns to float
+    df[numeric_features] = df[numeric_features].astype(float)
+    
+    if target:
+        y = df[target].astype(int)  # Ensure target is integer
+        X = df.drop(columns=[target])
+        return X, y
+    return df
+
+# --------------------------
+# Load datasets
+# --------------------------
+Xtrain_path = "hf://datasets/sasipriyank/predectivemlops/Xtrain.csv"
+Xtest_path = "hf://datasets/sasipriyank/predectivemlops/Xtest.csv"
+ytrain_path = "hf://datasets/sasipriyank/predectivemlops/ytrain.csv"
+ytest_path = "hf://datasets/sasipriyank/predectivemlops/ytest.csv"
+
+Xtrain, ytrain = load_csv_safe(Xtrain_path, numeric_features, target=target_column)
+Xtest, ytest = load_csv_safe(Xtest_path, numeric_features, target=target_column)
+
+# --------------------------
+# Handle class imbalance
 # --------------------------
 class_weight = ytrain.value_counts()[0] / ytrain.value_counts()[1]
 
 # --------------------------
-# Preprocessing + model pipeline
+# Preprocessing and pipeline
 # --------------------------
 preprocessor = make_column_transformer(
     (StandardScaler(), numeric_features)
