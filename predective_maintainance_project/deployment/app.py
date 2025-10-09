@@ -16,12 +16,12 @@ st.write("Kindly enter the customer details to check whether they are likely to 
 
 # Collect user input
 
-LuboilPressure = st.number_input("Lub oil pressure",min_value=0.0, value=2.493592)
+LuboilPressure = st.number_input("Lub oil pressure", min_value=0.0, value=2.493592)
 EngineRpm = st.number_input("Engine rpm", min_value=0, value=700)
-FuelPressure= st.number_input("Fuel pressure",min_value=0.0, value=11.790927)
+FuelPressure = st.number_input("Fuel pressure", min_value=0.0, value=11.790927)
 CoolantPressure = st.number_input("Coolant pressure", min_value=0.0, value=3.178981)
-LuboilTemp = st.number_input("lub oil temp", min_value=0, value=84.144163)
-CoolantTemp = st.number_input("Coolant temp", min_value=0, value=81.632187)
+LuboilTemp = st.number_input("Lub oil temp", min_value=0.0, value=84.144163)
+CoolantTemp = st.number_input("Coolant temp", min_value=0.0, value=81.632187)
 
 # Convert categorical inputs to match model training
 input_data = pd.DataFrame([{
