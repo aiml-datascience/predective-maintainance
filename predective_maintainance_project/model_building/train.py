@@ -26,7 +26,7 @@ except ModuleNotFoundError:
 api = HfApi(token=HF_TOKEN)
 
 mlflow.set_tracking_uri("http://localhost:5000")
-mlflow.set_experiment("Tourismops")
+mlflow.set_experiment("predectivemlops")
 
 Xtrain_path = "hf://datasets/sasipriyank/predectivemlops/Xtrain.csv"
 Xtest_path = "hf://datasets/sasipriyank/predectivemlops/Xtest.csv"
