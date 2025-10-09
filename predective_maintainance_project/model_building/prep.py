@@ -25,17 +25,6 @@ api = HfApi(token=HF_TOKEN)
 DATASET_PATH = "hf://datasets/sasipriyank/predectivemlops/engine_data.csv" # Corrected dataset path
 engine_dataset = pd.read_csv(DATASET_PATH) # Updated variable name
 print("Dataset loaded successfully.")
-
-# Drop the unique and customer interaction identifier
-
-engine_dataset.drop(
-    [
-        "Engine Condition",
-    ],
-    axis=1,
-    inplace=True,
-)
-
 # Define the target variable for the classification task
 target = 'Engine Condition'
 
