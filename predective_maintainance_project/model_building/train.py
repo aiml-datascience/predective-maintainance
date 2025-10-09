@@ -50,27 +50,34 @@ target_column = 'Engine Condition'
 # --------------------------
 def load_csv_safe(path, numeric_features, target=None):
     """
-    Load CSV, remove any duplicate header row, convert numeric columns.
+    Load CSV, remove any duplicate header row, strip whitespace from column names, convert numeric columns.
     """
     df = pd.read_csv(path, header=0)
+    
+    # Strip whitespace from column names
+    df.columns = df.columns.str.strip()
     
     # Detect if first row is still the header (string in numeric column)
     first_row = df.iloc[0]
     for col in numeric_features:
+        if col not in df.columns:
+            continue
         try:
             float(first_row[col])
         except ValueError:
-            # First row is header again, drop it
             df = df.iloc[1:].reset_index(drop=True)
             break
-    
+
     # Convert numeric columns to float
     df[numeric_features] = df[numeric_features].astype(float)
-    
+
     if target:
-        y = df[target].astype(int)  # Ensure target is integer
+        if target not in df.columns:
+            raise ValueError(f"Target column '{target}' not found in CSV columns: {df.columns.tolist()}")
+        y = df[target].astype(int)
         X = df.drop(columns=[target])
         return X, y
+
     return df
 
 # --------------------------
@@ -78,8 +85,6 @@ def load_csv_safe(path, numeric_features, target=None):
 # --------------------------
 Xtrain_path = "hf://datasets/sasipriyank/predectivemlops/Xtrain.csv"
 Xtest_path = "hf://datasets/sasipriyank/predectivemlops/Xtest.csv"
-ytrain_path = "hf://datasets/sasipriyank/predectivemlops/ytrain.csv"
-ytest_path = "hf://datasets/sasipriyank/predectivemlops/ytest.csv"
 
 Xtrain, ytrain = load_csv_safe(Xtrain_path, numeric_features, target=target_column)
 Xtest, ytest = load_csv_safe(Xtest_path, numeric_features, target=target_column)
