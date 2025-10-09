@@ -1,3 +1,4 @@
+%%writefile predective_maintainance_project/model_building/prep.py
 # for data manipulation
 import pandas as pd
 import sklearn
@@ -7,10 +8,20 @@ import os
 from sklearn.model_selection import train_test_split
 # for hugging face space authentication to upload files
 from huggingface_hub import login, HfApi
-from google.colab import userdata
 
-# Define constants for the dataset and output paths
-HF_TOKEN = userdata.get('HF_TOKEN')
+# Handle Hugging Face token from Colab or environment
+try:
+    from google.colab import userdata
+    HF_TOKEN = userdata.get('HF_TOKEN')
+    print("✅ Loaded HF token from Colab userdata")
+except ModuleNotFoundError:
+    HF_TOKEN = os.getenv("HF_TOKEN")
+    if HF_TOKEN:
+        print("✅ Loaded HF token from environment variable")
+    else:
+        print("⚠️ No HF token found — please set HF_TOKEN as an environment variable.")
+
+
 api = HfApi(token=HF_TOKEN)
 DATASET_PATH = "hf://datasets/sasipriyank/predectivemlops/engine_data.csv" # Corrected dataset path
 engine_dataset = pd.read_csv(DATASET_PATH) # Updated variable name
