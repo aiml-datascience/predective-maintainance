@@ -1,4 +1,3 @@
-%%writefile predective_maintainance_project/model_building/prep.py
 # for data manipulation
 import pandas as pd
 import sklearn
