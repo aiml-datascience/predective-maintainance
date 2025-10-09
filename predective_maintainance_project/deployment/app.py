@@ -12,7 +12,7 @@ model = joblib.load(model_path)
 # Streamlit UI for Customer Churn Prediction
 st.title("Predective Maintainencen App")
 st.write("The Predective Maintainencen App is an internal tool for customer that predicts whether Machine sensor is failed or not.")
-st.write("Kindly enter the customer details to check whether they are likely to purchase or not.")
+st.write("Kindly enter the details to check whether Machine sensor is failed or not.")
 
 # Collect user input
 
