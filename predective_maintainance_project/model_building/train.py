@@ -16,14 +16,10 @@ from huggingface_hub.utils import RepositoryNotFoundError
 # --------------------------
 # Hugging Face token
 # --------------------------
-try:
-    from google.colab import userdata
-    HF_TOKEN = userdata.get('HF_TOKEN')
-    print("✅ Loaded HF token from Colab userdata")
-except ModuleNotFoundError:
-    HF_TOKEN = os.getenv("HF_TOKEN")
-    print("✅ Loaded HF token from environment")
-
+HF_TOKEN = os.getenv("HF_TOKEN")
+if not HF_TOKEN:
+    raise ValueError("HF_TOKEN environment variable is not set")
+print("✅ Loaded HF token from environment")
 api = HfApi(token=HF_TOKEN)
 
 # --------------------------
@@ -43,51 +39,31 @@ numeric_features = [
     'Coolant temp',
     'Engine rpm'
 ]
-target_column = 'Engine Condition'
 
 # --------------------------
-# Robust CSV loader
-# --------------------------
-def load_csv_safe(path, numeric_features, target=None):
-    """
-    Load CSV, remove any duplicate header row, strip whitespace from column names, convert numeric columns.
-    """
-    df = pd.read_csv(path, header=0)
-    
-    # Strip whitespace from column names
-    df.columns = df.columns.str.strip()
-    
-    # Detect if first row is still the header (string in numeric column)
-    first_row = df.iloc[0]
-    for col in numeric_features:
-        if col not in df.columns:
-            continue
-        try:
-            float(first_row[col])
-        except ValueError:
-            df = df.iloc[1:].reset_index(drop=True)
-            break
-
-    # Convert numeric columns to float
-    df[numeric_features] = df[numeric_features].astype(float)
-
-    if target:
-        if target not in df.columns:
-            raise ValueError(f"Target column '{target}' not found in CSV columns: {df.columns.tolist()}")
-        y = df[target].astype(int)
-        X = df.drop(columns=[target])
-        return X, y
-
-    return df
-
-# --------------------------
-# Load datasets
+# Dataset paths
 # --------------------------
 Xtrain_path = "hf://datasets/sasipriyank/predectivemlops/Xtrain.csv"
 Xtest_path = "hf://datasets/sasipriyank/predectivemlops/Xtest.csv"
+ytrain_path = "hf://datasets/sasipriyank/predectivemlops/ytrain.csv"
+ytest_path = "hf://datasets/sasipriyank/predectivemlops/ytest.csv"
 
-Xtrain, ytrain = load_csv_safe(Xtrain_path, numeric_features, target=target_column)
-Xtest, ytest = load_csv_safe(Xtest_path, numeric_features, target=target_column)
+
+# --------------------------
+# Load datasets (features & target separately)
+# --------------------------
+Xtrain = pd.read_csv(Xtrain_path)
+Xtest = pd.read_csv(Xtest_path)
+ytrain = pd.read_csv(ytrain_path).iloc[:, 0]  # single column
+ytest = pd.read_csv(ytest_path).iloc[:, 0]
+
+# Strip column whitespace
+Xtrain.columns = Xtrain.columns.str.strip()
+Xtest.columns = Xtest.columns.str.strip()
+
+# Convert numeric features to float
+Xtrain[numeric_features] = Xtrain[numeric_features].astype(float)
+Xtest[numeric_features] = Xtest[numeric_features].astype(float)
 
 # --------------------------
 # Handle class imbalance
@@ -158,6 +134,7 @@ with mlflow.start_run():
     joblib.dump(best_model, model_path)
     mlflow.log_artifact(model_path, artifact_path="model")
     print(f"✅ Model saved at {model_path}")
+
     # --------------------------
     # Upload to Hugging Face
     # --------------------------
