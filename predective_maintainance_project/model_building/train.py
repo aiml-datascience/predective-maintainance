@@ -36,10 +36,10 @@ mlflow.set_experiment("predectivemlops")
 # Dataset loading
 # --------------------------
 # Update these paths to actual local CSVs or download via HfApi
-Xtrain_path = "predective_maintainance_project/data/Xtrain.csv"
-Xtest_path = "predective_maintainance_project/data/Xtest.csv"
-ytrain_path = "predective_maintainance_project/data/ytrain.csv"
-ytest_path = "predective_maintainance_project/data/ytest.csv"
+Xtrain_path = "hf://datasets/sasipriyank/predectivemlops/Xtrain.csv"
+Xtest_path = "hf://datasets/sasipriyank/predectivemlops/Xtest.csv"
+ytrain_path = "hf://datasets/sasipriyank/predectivemlops/ytrain.csv"
+ytest_path = "hf://datasets/sasipriyank/predectivemlops/ytest.csv"
 
 # Load CSVs
 Xtrain = pd.read_csv(Xtrain_path)
