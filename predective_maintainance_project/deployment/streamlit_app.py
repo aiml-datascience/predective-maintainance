@@ -9,9 +9,9 @@ model_path = hf_hub_download(repo_id="sasipriyank/predectivemodel", filename="be
 # Load the model
 model = joblib.load(model_path)
 
-# Streamlit UI for Prediction Maintainance
-st.title("Predective Maintainencen App")
-st.write("The Predective Maintainencen App is an internal tool for customer that predicts whether Machine sensor is failed or not.")
+# Streamlit UI for Prediction Maintenance
+st.title("Predective Maintenance App")
+st.write("The Predective Maintenance App is an internal tool for customer that predicts whether Machine sensor is failed or not.")
 st.write("Kindly enter the details to check whether Machine sensor is failed or not.")
 
 # Collect user input
